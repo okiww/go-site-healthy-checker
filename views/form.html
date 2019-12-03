@@ -1,0 +1,11 @@
+<html>
+    <form action="/" method="POST">
+        Sites: <input type="text" name="name">
+        <input type="submit" value="Submit"> {{.error}}
+
+
+        {{range .site.Sites }}
+            <h1>Site : {{.Name}}  Status : {{.Status}}</h1>
+        {{end}}
+    </form>
+</html>
