@@ -38,6 +38,7 @@ func (ctrl *SiteHealthyController) Post(c *gin.Context) {
 
 	sites, err := ctrl.siteService.PostSite(site)
 	if err != nil {
+		sites = ctrl.siteService.GetActiveSites()
 		c.HTML(200, "form.html", gin.H{
 			"site": sites,
 			"error": "URL is not valid",
