@@ -7,4 +7,5 @@ type Form struct {
 type Site struct {
 	Name string `form:"name"`
 	Status string `form:"status"`
+	Prefix string `form:"prefix"`
 }

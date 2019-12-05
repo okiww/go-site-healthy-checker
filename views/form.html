@@ -3,6 +3,7 @@
         <!-- Latest compiled and minified CSS -->
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
         <title>Okky - Site Healthy Checker</title>
+        <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     </head>
     <body class="container">
         <div class="row">
@@ -10,7 +11,7 @@
                 <h1>Site Healthy Checker</h1>
             </div>
             <div class="col-md-4 col-md-offset-3">
-                <form action="/" method="POST">
+                <form action="/" method="POST" id="target">
                     <div class="form-group">
                         <label for="exampleInputEmail1">Site</label>
                         <input type="text" class="form-control" name="name">
@@ -18,15 +19,42 @@
                     <button type="submit" class="btn btn-primary">Check</button> {{.error}}
                 </form>
             </div>
-            <div class="col-md-4 col-md-offset-3">
+            <div class="col-md-6 col-md-offset-3">
                 <ul class="list-group">
                     {{range .site.Sites }}
                         <li class="list-group-item">
-                            <a href="{{.Name}}">{{.Name}}</a> - Status : <b>{{.Status}}</b>
+                            <a href="{{.Name}}" id="{{.Name}}">{{.Name}}</a> - Status : <b id="status-{{.Prefix}}">{{.Status}}</b> - Last Checked : <b id="date-{{.Prefix}}"></b>
                         </li>
                     {{end}}
                 </ul>
             </div>
         </div>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+        <script type="text/javascript">
+            var app = {}
+            app.ws = undefined
+            app.init = function () {
+                if (!(window.WebSocket)) {
+                    alert('Your browser does not support WebSocket')
+                    return
+                }
+                var name = "okky"
+                app.ws = new WebSocket("ws://localhost:8080/ws?username=" + name);
+                app.ws.onopen = function() {}
+                app.ws.onmessage = function (event) {
+                    var res = JSON.parse(event.data);
+                    var dateTime = new Date();
+
+                    dateTime = moment(dateTime).format("YYYY-MM-DD HH:mm:ss");
+                    $('#date-'+res["Prefix"]).html(dateTime)
+                    $('#status-'+res["Prefix"]).html(res["Status"])
+                }
+                app.ws.onclose = function () {
+                    var message = '<b>me</b>: disconnected'
+                }
+            }
+            window.onload = app.init
+        </script>
     </body>
 </html>

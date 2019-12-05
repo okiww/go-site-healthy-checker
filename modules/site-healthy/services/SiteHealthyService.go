@@ -1,8 +1,9 @@
 package services
 
 import (
-	"site-health-check/modules/site-healthy/dto"
+	"runtime"
 	helpers "site-health-check/common/helpers"
+	"site-health-check/modules/site-healthy/dto"
 )
 
 type SiteHealthyService struct {}
@@ -15,10 +16,12 @@ func SiteHealthyServiceHandler() SiteHealthyInterface  {
 	return svc
 }
 
+// Service GetActiveSites for get all active site
 func (service *SiteHealthyService) GetActiveSites() dto.Form {
 	return form
 }
 
+// Service PostSite for post site
 func (service *SiteHealthyService) PostSite(site dto.Site) (dto.Form, error)  {
 	err := helpers.ValidateURL(site.Name)
 	if err != nil {
@@ -31,7 +34,21 @@ func (service *SiteHealthyService) PostSite(site dto.Site) (dto.Form, error)  {
 	}
 
 	site.Status = status
+	site.Prefix = site.Prefix
 	form.Sites = append(form.Sites, site)
 
 	return form, nil
+}
+
+// Service CheckURLEvery5Minutes for running checker siter every 5 minutes
+func (service *SiteHealthyService) CheckURLEvery5Minutes(URL, prefix string) chan int  {
+	runtime.GOMAXPROCS(2)
+
+	var code  = make(chan int, 5)
+	var status  = make(chan string)
+	var err = make(chan error)
+
+	go helpers.CheckerSite(URL, prefix, code, status, err)
+
+	return code
 }
