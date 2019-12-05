@@ -10,7 +10,9 @@ The first clone or download this project
 
 ### The way
 
-You will need Go installed in your local machine
+* First you will need Go installed in your local machine
+
+* Go to dir project `go-site-healthy-checker`
 
 * Install dep dependency manager
 
