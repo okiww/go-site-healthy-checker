@@ -20,6 +20,7 @@ You will need Go installed in your local machine
 
   `$ dep ensure`
 
-* Run the app.
+* Run the app using this command
 
   `$ go run main.go`
+* Open `http://localhost:8080`
