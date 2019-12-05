@@ -44,7 +44,7 @@ func (service *SiteHealthyService) PostSite(site dto.Site) (dto.Form, error)  {
 func (service *SiteHealthyService) CheckURLEvery5Minutes(URL, prefix string) chan int  {
 	runtime.GOMAXPROCS(2)
 
-	var code  = make(chan int, 5)
+	var code  = make(chan int)
 	var status  = make(chan string)
 	var err = make(chan error)
 
