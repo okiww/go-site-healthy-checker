@@ -6,7 +6,7 @@ import (
 	"site-health-check/modules/site-healthy/controllers"
 )
 
-func main() {
+func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	handler := controllers.SiteHealthyControllerHandler()
 	r.LoadHTMLGlob("views/*")
@@ -15,7 +15,17 @@ func main() {
 	})
 
 	r.GET("/", handler.Index)
-	r.POST("/", handler.Post)
+	r.POST("/post", handler.Post)
+	r.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
+	})
 
+	return r
+}
+
+
+func main() {
+	r := SetupRouter()
 	r.Run(":8080")
 }
+

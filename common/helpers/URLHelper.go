@@ -62,7 +62,7 @@ func CheckerSite(domain string, prefix string, code chan<- int, status chan<- st
 		//status <- stat
 		//error <- err
 		//Checker(domain)
-		time.Sleep(5 * time.Second)
+		time.Sleep(5 * time.Minute)
 	}
 
 }
