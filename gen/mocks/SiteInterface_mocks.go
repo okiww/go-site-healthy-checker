@@ -63,11 +63,9 @@ func (mr *MockSiteHealthyInterfaceMockRecorder) PostSite(site interface{}) *gomo
 }
 
 // CheckURLEvery5Minutes mocks base method
-func (m *MockSiteHealthyInterface) CheckURLEvery5Minutes(URL, prefix string) chan int {
+func (m *MockSiteHealthyInterface) CheckURLEvery5Minutes(URL, prefix string) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CheckURLEvery5Minutes", URL, prefix)
-	ret0, _ := ret[0].(chan int)
-	return ret0
+	m.ctrl.Call(m, "CheckURLEvery5Minutes", URL, prefix)
 }
 
 // CheckURLEvery5Minutes indicates an expected call of CheckURLEvery5Minutes

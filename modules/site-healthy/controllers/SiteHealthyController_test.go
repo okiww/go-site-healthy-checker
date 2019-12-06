@@ -3,11 +3,13 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"site-health-check/modules/site-healthy/dto"
+
 	"strings"
 
 	"github.com/golang/mock/gomock"
@@ -103,11 +105,11 @@ func TestSiteHealthyController_Post(t *testing.T) {
 			t.Fail()
 		}
 
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
 
-		mock := mockService.NewMockSiteHealthyInterface(ctrl)
-
+		mock := mockService.NewMockSiteHealthyInterface(mockCtrl)
+		//
 		var expected dto.Form
 		site := dto.Site{
 			Name:   "https://www.github.com",
@@ -115,15 +117,13 @@ func TestSiteHealthyController_Post(t *testing.T) {
 			Prefix: "githubcom",
 		}
 		expected.Sites = append(expected.Sites, site)
-		mock.EXPECT().PostSite(site).Return(expected, nil).Times(1)
-
-		assert.Equal(t, expected.Sites[0], site)
-		assert.NotNil(t, expected)
+		errMock := errors.New("Mock Error")
+		mock.EXPECT().PostSite(site).Return(expected, errMock).AnyTimes()
 
 		ctrlSite := SiteHealthyController{siteService:mock}
-		c, r := gin.CreateTestContext(w)
-		c.Request = req
-		ctrlSite.Post(c)
+		resService, _ := ctrlSite.siteService.PostSite(site)
+		assert.Equal(t, expected, resService)
+		assert.NotNil(t, expected)
 
 	})
 }
