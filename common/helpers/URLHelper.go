@@ -47,6 +47,6 @@ func CheckerSite(domain string, prefix string) {
 		siteCode, stat, _ := Checker(domain)
 		currentConn := socket.GetCurrentConnection()
 		socket.BrodacastMessage(currentConn, siteCode, stat, domain, prefix)
-		time.Sleep(5 * time.Second)
+		time.Sleep(5 * time.Minute)
 	}
 }
