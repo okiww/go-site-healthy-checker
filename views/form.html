@@ -11,16 +11,15 @@
                 <h1>Site Healthy Checker</h1>
             </div>
             <div class="col-md-4 col-md-offset-3">
-                <form action="/post" method="POST" id="target">
                     <div class="form-group">
                         <label>Site</label>
-                        <input type="text" class="form-control" name="name">
+                        <input type="text" class="form-control" name="name" id="url-name">
                     </div>
-                    <button type="submit" class="btn btn-primary">Check</button> {{.error}}
-                </form>
+                    <button type="button" class="btn btn-primary" id="check">Check</button> <span id="error-message"></span>
             </div>
             <div class="col-md-6 col-md-offset-3">
-                <ul class="list-group">
+                <ul class="list-group" id="list-site">
+                    <br>
                     {{range .site.Sites }}
                         <li class="list-group-item">
                             <a href="{{.Name}}" id="{{.Name}}">{{.Name}}</a> - Status : <b id="status-{{.Prefix}}">{{.Status}}</b> - Last Checked : <b id="date-{{.Prefix}}"></b>
@@ -32,14 +31,14 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
         <script type="text/javascript">
-            var app = {}
-            app.ws = undefined
+            var app = {};
+            app.ws = undefined;
             app.init = function () {
                 if (!(window.WebSocket)) {
                     alert('Your browser does not support WebSocket')
                     return
                 }
-                var name = "okky"
+                var name = "okky";
                 app.ws = new WebSocket("ws://localhost:8080/ws?username=" + name);
                 app.ws.onopen = function() {}
                 app.ws.onmessage = function (event) {
@@ -47,14 +46,36 @@
                     var dateTime = new Date();
 
                     dateTime = moment(dateTime).format("YYYY-MM-DD HH:mm:ss");
-                    $('#date-'+res["Prefix"]).html(dateTime)
+                    $('#date-'+res["Prefix"]).html(dateTime);
                     $('#status-'+res["Prefix"]).html(res["Status"])
                 }
                 app.ws.onclose = function () {
                     var message = '<b>me</b>: disconnected'
                 }
             }
-            window.onload = app.init
+            window.onload = app.init;
+
+            $("#check").click(function (event) {
+                let url = "/post";
+                let req = { name : $("#url-name").val()};
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data:JSON.stringify(req),
+                    contentType: "application/json",
+                    success: function( res){
+                        let html = '<li class=list-group-item>'+
+                            '<a href="'+res.data.Name+'" id="'+res.data.Name+'">'+res.data.Name+'</a>'+
+                            '- Status : <b id="status-'+res.data.Prefix+'">'+res.data.Status+'</b>'+
+                            '- Last Checked : <b id="date-'+res.data.Prefix+'"></b>'+
+                            '</li>';
+                        $("#list-site").append(html);
+                    },
+                    error: function( jqXhr, textStatus, errorThrown ){
+                        $("#error-message").html(errorThrown);
+                    }
+                });
+            })
         </script>
     </body>
 </html>

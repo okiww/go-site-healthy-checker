@@ -41,14 +41,7 @@ func (service *SiteHealthyService) PostSite(site dto.Site) (dto.Form, error)  {
 }
 
 // Service CheckURLEvery5Minutes for running checker siter every 5 minutes
-func (service *SiteHealthyService) CheckURLEvery5Minutes(URL, prefix string) chan int  {
+func (service *SiteHealthyService) CheckURLEvery5Minutes(URL, prefix string) {
 	runtime.GOMAXPROCS(2)
-
-	var code  = make(chan int)
-	var status  = make(chan string)
-	var err = make(chan error)
-
-	go helpers.CheckerSite(URL, prefix, code, status, err)
-
-	return code
+	go helpers.CheckerSite(URL, prefix)
 }

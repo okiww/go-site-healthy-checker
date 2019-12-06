@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"site-health-check/common/infra/socket"
@@ -10,6 +9,8 @@ import (
 
 var client = http.Client{}
 var HEALTH_TIME_NORMAL int64 = 800 // time normal in millisecond
+const healthy  = "HEALTHY"
+const unhealthy  = "UNHEALTHY"
 
 func ValidateURL(URL string) error {
 	_, err := url.ParseRequestURI(URL)
@@ -22,7 +23,7 @@ func ValidateURL(URL string) error {
 
 func Checker(domain string) (int, string, error) {
 	url := domain
-	status := "UNHEALTHY"
+	status := unhealthy
 
 	time_start := time.Now()
 	req, err := http.NewRequest("HEAD", url, nil)
@@ -36,33 +37,16 @@ func Checker(domain string) (int, string, error) {
 	resp.Body.Close()
 	totalTime := time.Since(time_start).Milliseconds()
 	if totalTime < HEALTH_TIME_NORMAL {
-		status = "HEALTHY"
+		status = healthy
 	}
 	return resp.StatusCode, status, nil
 }
 
-func CheckerSite(domain string, prefix string, code chan<- int, status chan<- string, error chan<- error) {
+func CheckerSite(domain string, prefix string) {
 	for  {
 		siteCode, stat, _ := Checker(domain)
-
-		fmt.Println("============")
-		fmt.Println(prefix)
-		fmt.Println(siteCode)
-		fmt.Println(stat)
-		fmt.Println("============")
-		//code <- siteCode
-		//status <- stat
-		//
-		//var c int
-		//c = <-code
-		//s := <-status
-
-		currenConn := socket.GetCurrentConnection()
-		socket.BrodacastMessage(currenConn, siteCode, stat, domain, prefix)
-		//status <- stat
-		//error <- err
-		//Checker(domain)
-		time.Sleep(5 * time.Minute)
+		currentConn := socket.GetCurrentConnection()
+		socket.BrodacastMessage(currentConn, siteCode, stat, domain, prefix)
+		time.Sleep(5 * time.Second)
 	}
-
 }

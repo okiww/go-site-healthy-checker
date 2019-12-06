@@ -2,17 +2,18 @@ package controllers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
 	"io/ioutil"
-	"net/url"
+	"site-health-check/modules/site-healthy/dto"
 	"strings"
 
-	//"github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	"net/http"
 	"net/http/httptest"
-	//mockRepositories "site-health-check/gen/mocks"
-	//"site-health-check/modules/site-healthy/dto"
+	mockService "site-health-check/gen/mocks"
 	"testing"
 )
 
@@ -76,26 +77,24 @@ func TestSiteHealthyController_Index(t *testing.T) {
 
 func TestSiteHealthyController_Post(t *testing.T) {
 	t.Run("test post sites", func(t *testing.T) {
-		data := url.Values{}
-		data.Set("Name", "https://www.github.com")
+		data := map[string]string{"Name": "https://www.github.com"}
+		request, _ := json.Marshal(data)
 		// Create a response recorder
 		w := httptest.NewRecorder()
 
 		// Get a new router
 		r := getRouter(true)
 
-		// Set the token cookie to simulate an authenticated user
-		http.SetCookie(w, &http.Cookie{Name: "token", Value: "123"})
 		handler := SiteHealthyControllerHandler()
 		// Define the route similar to its definition in the routes file
 		r.POST("/post", handler.Post)
 
 		// Create a request to send to the above route
-		req, err := http.NewRequest("POST", "/post", bytes.NewBufferString(data.Encode()))
+		req, err := http.NewRequest("POST", "/post", bytes.NewBuffer(request))
 		if err != nil {
 			fmt.Println(err)
 		}
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		req.Header.Set("Content-Type", "application/json")
 		// Create the service and process the above request.
 		r.ServeHTTP(w, req)
 
@@ -104,12 +103,27 @@ func TestSiteHealthyController_Post(t *testing.T) {
 			t.Fail()
 		}
 
-		// Test that the page title is "Home Page"
-		// You can carry out a lot more detailed tests using libraries that can
-		// parse and process HTML pages
-		//p, err := ioutil.ReadAll(w.Body)
-		//if err != nil || strings.Index(string(p), "<title>Okky - Site Healthy Checker</title>") < 0 {
-		//	t.Fail()
-		//}
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		mock := mockService.NewMockSiteHealthyInterface(ctrl)
+
+		var expected dto.Form
+		site := dto.Site{
+			Name:   "https://www.github.com",
+			Status: "HEALTHY",
+			Prefix: "githubcom",
+		}
+		expected.Sites = append(expected.Sites, site)
+		mock.EXPECT().PostSite(site).Return(expected, nil).Times(1)
+
+		assert.Equal(t, expected.Sites[0], site)
+		assert.NotNil(t, expected)
+
+		ctrlSite := SiteHealthyController{siteService:mock}
+		c, r := gin.CreateTestContext(w)
+		c.Request = req
+		ctrlSite.Post(c)
+
 	})
 }

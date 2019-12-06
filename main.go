@@ -9,13 +9,13 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	handler := controllers.SiteHealthyControllerHandler()
+	r.POST("/post", handler.Post)
 	r.LoadHTMLGlob("views/*")
 	r.GET("/ws", func(c *gin.Context) {
 		socket.Wshandler(c.Writer, c.Request)
 	})
 
 	r.GET("/", handler.Index)
-	r.POST("/post", handler.Post)
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(200, "pong")
 	})
